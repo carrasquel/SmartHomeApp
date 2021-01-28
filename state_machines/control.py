@@ -14,7 +14,8 @@ class SmartHome(RackioStateMachine):
     idle = State('off')
 
     # Transition Definitions
-    start_to_run = starting.to(running)
+    start_to_idle = starting.to(idle)
+    idle_to_run = idle.to(running)
     run_to_idle = running.to(idle)
 
     run_to_start = running.to(starting)
@@ -32,7 +33,7 @@ class SmartHome(RackioStateMachine):
         if self.check_state():
             self.switch_off_relay()
 
-        self.start_to_run()
+        self.start_to_idle()
 
     def while_running(self):
 
@@ -44,15 +45,26 @@ class SmartHome(RackioStateMachine):
         
         if (on_1 < time_check < off_1) or (on_2 < time_check < off_2):
             
-            if self.acquisition.TEMPERATURE < self.control.SET_TEMP - 0.4 and not self.check_state():
-                self.switch_on_relay()
-            elif self.acquisition.TEMPERATURE > self.control.SET_TEMP + 0.4 and self.check_state():
-                self.switch_off_relay()
+            if self.acquisition.TEMPERATURE > self.control.SET_TEMP + 0.4 and self.check_state():
+                self.run_to_idle()
 
-    def switch_on_relay(self):
+    def while_idle(self):
+
+        time_check = datetime.strptime(datetime.utcnow().time().strftime('%H:%M'), '%H:%M').time()
+        on_1 = self.control.ON_1
+        off_1 = self.control.OFF_1
+        on_2 = self.control.ON_2
+        off_2 = self.control.OFF_2
+        
+        if (on_1 < time_check < off_1) or (on_2 < time_check < off_2):
+            
+            if self.acquisition.TEMPERATURE < self.control.SET_TEMP - 0.4 and not self.check_state():
+                self.idle_to_run()
+
+    def on_running(self):
         self.pi.write(27, 1)
 
-    def switch_off_relay(self):
+    def on_idle(self):
         self.pi.write(27, 0)
 
     def check_state(self):
