@@ -7,13 +7,13 @@ app = Rackio()
 @app.define_route('/')
 def home():
     
-    return render_template('home.html')
+    return render_template('main.html')
 
 
 @app.define_route('/main')
 def main():
     
-    return render_template('main.html')
+    return render_template('home.html')
 
 
 @app.define_route('/settings')

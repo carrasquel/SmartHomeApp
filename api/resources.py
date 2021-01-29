@@ -72,5 +72,7 @@ class TempResource(RackioResource):
             'on': machine.check_state()
             }
 
+        print(doc)
+
         response.body = json.dumps(doc)
     

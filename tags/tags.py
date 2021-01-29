@@ -1,18 +1,20 @@
 from rackio import TagEngine, Rackio
 
+app = Rackio()
+
 engine = TagEngine()
 
 acquisition = [
-    ("TEMPERATURE", "float")
-    ("PRESSURE", "float")
+    ("TEMPERATURE", "float"),
+    ("PRESSURE", "float"),
     ("HUMIDITY", "float")
 ]
 
 control = [
-    ("SET_TEMP", "float")
-    ("ON_1", "str")
-    ("ON_2", "str")
-    ("OFF_1", "str")
+    ("SET_TEMP", "float"),
+    ("ON_1", "str"),
+    ("ON_2", "str"),
+    ("OFF_1", "str"),
     ("OFF_2", "str")
 ]
 
@@ -24,3 +26,5 @@ engine.write_tag("ON_1", "07:30")
 engine.write_tag("ON_2", "17:30")
 engine.write_tag("OFF_1", "09:30")
 engine.write_tag("OFF_2", "22:00")
+
+app.set_db(dbfile="app.db")
