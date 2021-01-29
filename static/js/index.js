@@ -1,100 +1,101 @@
-function loadUrl(newLocation){
-  window.location = newLocation;
-  return false;
-}
+new Tulipan({
+  el: '#app',
+  data: {
+  },
 
-function digits_count(n) {
-        var count = 0;
-        if (n >= 1) ++count;
+  ready: function(){
+    this.$router.navigate("/main");
+  },
 
-        while (n / 10 >= 1) {
-          n /= 10;
-          ++count;
-        }
-
-        return count;
-      }
-
-function countDownTimer(){
-  // Set the date we're counting down to
-  var countDownDate = new Date(document.getElementById('time').innerHTML).getTime();
-
-  // Update the count down every 1 second
-  var x = setInterval(function() {
-
-  // Get today's date and time
-  var now = new Date().getTime();
-
-  // Find the distance between now and the count down date
-  var distance = now - countDownDate;
-
-  // Time calculations for hours, minutes and seconds
-  var minutes = Math.floor((30 - (distance % (1000 * 60 * 60)) / (1000 * 60)));
-  var seconds = Math.floor((60 - (distance % (1000 * 60)) / 1000));
-
-  // Display the result in the element with id="countdown"
-  if (digits_count(seconds) > 1){
-    document.getElementById("advanceBtn").innerHTML =  minutes + ":" + seconds;
-  } else {
-    document.getElementById("advanceBtn").innerHTML =  minutes + ":0" + seconds;
+  methods: {
   }
-
-  // If the count down is finished, write some text
-  if (distance > 30 * 60 * 1000) {
-    clearInterval(x);
-    document.getElementById("advanceBtn").innerHTML = "END"
-    setTimeout(function() {
-      location.reload();
-    }, 2000);
-  }
-  }, 1000);
-}
-
-function disableAdvance() {
-  var advanceBtn = document.getElementById('advanceBtn')
-  advanceBtn.onmouseover = ''
-  advanceBtn.onclick = ''
-  $('#advanceBtn').addClass('disabled')
-//  advanceBtn.style.cursor = 'none'
-}
-
-function getTemp(){
-    var tempDisplay = document.getElementById('tempDisplay')
-    var temp = document.getElementById('temp')
-    fetch(`${window.origin}/temp`)
-    .then(function(response){
-        if (response.status !== 200) {
-            alert(`Bad response from temperature api: ${response.status}`)
-            return ;
-        }
-        response.json().then(function(data){
-            tempDisplay.innerHTML = data.temp
-            if (data.on == 1){
-              temp.style.color = 'red'
-            } else {
-              temp.style.color = 'white'
-            }
-        })
-    })
-}
-
-function getWeather(){
-    var weatherDisplay = document.getElementById('iemarquee')
-    fetch(`${window.origin}/weather`)
-    .then(function(response){
-        if (response.status !== 200) {
-            alert(`Bad response from temperature api: ${response.status}`)
-            return ;
-        }
-        response.json().then(function(data){
-            weatherDisplay.innerHTML = data[0].weather
-        })
-    })
-}
-
-$(document).ready(function(){
-    setTimeout(getWeather(), 10);
 })
 
-setInterval(getTemp, 1000)
-setInterval(getWeather, 120000)
+new Tulipan({
+  template: {
+    url: "/main",
+    async: false
+  },
+
+  route: "/main",
+  data: {
+    temp: 0.0,
+    desired_temp: 0.0,
+    on: false
+  },
+
+  methods: {
+    after: function(){
+      this.fetchState();
+    },
+    fetchState: function () {
+      this.$http.get('/api/state')
+        .then(function (res){
+          var data = res.data;
+          this.$set("temp", data.temp);
+          this.$set("desired_temp", data.desired_temp);
+          this.$set("on", data.on);
+        }, function(err){
+          console.log(err);
+        }) 
+    },
+    routeSettings: function(){
+      this.$router.navigate("/settings");
+    }
+  }
+})
+
+
+new Tulipan({
+  template: {
+    url: "/settings",
+    async: false
+  },
+
+  route: "/settings",
+  data: {
+    desired_temp: 0.0,
+    on_1: "",
+    off_1: "",
+    on_2: "",
+    off_2: ""
+  },
+
+  methods: {
+    after: function(){
+      this.fetchSettings();
+    },
+    fetchSettings: function () {
+      this.$http.get('/api/settings')
+        .then(function (res){
+          var data = res.data;
+          this.$set("desired_temp", data.desired_temp);
+          this.$set("on_1", data.on_1);
+          this.$set("off_1", data.off_1);
+          this.$set("on_2", data.on_2);
+          this.$set("off_2", data.off_2);
+        }, function(err){
+          console.log(err);
+        })
+    },
+    postSettings: function(){
+      var payload = {
+        desired_temp: this.desired_temp,
+        on_1: this.on_1,
+        off_1: this.off_1,
+        on_2: this.on_2,
+        off_2: this.off_2
+      };
+      this.$http.post("/api/settings", payload)
+      .then(function(res) {
+          this.routeMain();
+      }, function(err) {
+          this.$loading.hide();
+          console.log(err);
+      })
+    },
+    routeMain: function(){
+      this.$router.navigate("/main");
+    }
+  }
+})

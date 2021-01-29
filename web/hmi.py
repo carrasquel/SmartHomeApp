@@ -3,16 +3,17 @@ from rackio.web import render_template, raw_template
 
 app = Rackio()
 
+
 @app.define_route('/')
-def HMI():
-
-    return render_template('login.html')
-
-
-@app.define_route('/menu')
-def menu():
+def home():
     
-    return render_template('menu.html')
+    return render_template('home.html')
+
+
+@app.define_route('/main')
+def main():
+    
+    return render_template('main.html')
 
 
 @app.define_route('/settings')
