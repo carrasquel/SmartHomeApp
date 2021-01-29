@@ -94,6 +94,24 @@ new Tulipan({
           console.log(err);
       })
     },
+    turnON: function(){
+      this.$http.post("/api/on")
+      .then(function(res) {
+          console.log(res);
+      }, function(err) {
+          this.$loading.hide();
+          console.log(err);
+      })
+    },
+    turnOFF: function(){
+      this.$http.post("/api/off")
+      .then(function(res) {
+          console.log(res);
+      }, function(err) {
+          this.$loading.hide();
+          console.log(err);
+      })
+    },
     routeMain: function(){
       this.$router.navigate("/main");
     }
